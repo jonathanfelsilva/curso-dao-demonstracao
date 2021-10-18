@@ -11,13 +11,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SellerDaoJDBC implements SellerDao {
 
     private Connection connection;
 
-    public SellerDaoJDBC(Connection connection){
+    public SellerDaoJDBC(Connection connection) {
         this.connection = connection;
     }
 
@@ -51,7 +52,7 @@ public class SellerDaoJDBC implements SellerDao {
             statement.setInt(1, id);
             resultSet = statement.executeQuery();
 
-            if (resultSet.next()){
+            if (resultSet.next()) {
                 Department dep = instantiateDepartment(resultSet);
                 Seller seller = instantiateSeller(resultSet, dep);
                 return seller;
@@ -59,7 +60,7 @@ public class SellerDaoJDBC implements SellerDao {
                 return null;
             }
         } catch (SQLException e) {
-           throw new DbException(e.getMessage());
+            throw new DbException(e.getMessage());
         }
     }
 
@@ -86,5 +87,43 @@ public class SellerDaoJDBC implements SellerDao {
     @Override
     public List<Seller> findAll() {
         return null;
+    }
+
+    @Override
+    public List<Seller> findByDepartment(Integer departmentId) {
+
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.prepareStatement("select *, dp.name as DepName from seller se "
+                    + "left join department dp on dp.Id = se.DepartmentId "
+                    + "where se.DepartmentId = ?"
+                    + " order by se.Name");
+
+            statement.setInt(1, departmentId);
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                Department dep = instantiateDepartment(resultSet);
+                List<Seller> sellers = new ArrayList<>();
+                sellers.add(instantiateSeller(resultSet, dep));
+
+                while (resultSet.next()) {
+                    sellers.add(instantiateSeller(resultSet, dep));
+                }
+
+                return sellers;
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } catch (NullPointerException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(statement);
+            DB.closeConnection();
+        }
     }
 }
