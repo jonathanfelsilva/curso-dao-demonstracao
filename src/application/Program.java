@@ -31,6 +31,11 @@ public class Program {
         sellerDao.insert(newSeller);
         System.out.println("Deu certo! Novo ID: " + newSeller.getId());
 
+        System.out.println("\n=== Teste 5 ===");
+        Seller newSellerForUpdate = sellerDao.findById(3);
+        newSellerForUpdate.setName("Teste nome");
+        sellerDao.update(newSellerForUpdate);
+        System.out.println("Deu certo?");
 
     }
 }
