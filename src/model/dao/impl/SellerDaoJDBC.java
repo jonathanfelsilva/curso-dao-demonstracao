@@ -12,7 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SellerDaoJDBC implements SellerDao {
 
@@ -61,6 +63,9 @@ public class SellerDaoJDBC implements SellerDao {
             }
         } catch (SQLException e) {
             throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(statement);
+            DB.closeResultSet(resultSet);
         }
     }
 
@@ -86,12 +91,53 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public List<Seller> findAll() {
-        return null;
+
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+
+        try {
+            statement = connection.prepareStatement("select *, dp.name as DepName from seller se "
+                    + "left join department dp on dp.Id = se.DepartmentId ");
+
+            resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+
+                Map<Integer, Department> departmentsMap = new HashMap<>();
+                List<Seller> sellers = new ArrayList<>();
+
+                Department dep = instantiateDepartment(resultSet);
+                sellers.add(instantiateSeller(resultSet, dep));
+
+                departmentsMap.put(resultSet.getInt("DepartmentId"), dep);
+
+                while (resultSet.next()) {
+                    dep = departmentsMap.get(resultSet.getInt("DepartmentId"));
+
+                    if (dep == null) {
+                        dep = instantiateDepartment(resultSet);
+                        departmentsMap.put(resultSet.getInt("DepartmentId"), dep);
+                    }
+
+                    sellers.add(instantiateSeller(resultSet, dep));
+                }
+
+                return sellers;
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        } catch (NullPointerException e) {
+            throw new DbException(e.getMessage());
+        } finally {
+            DB.closeStatement(statement);
+            DB.closeResultSet(resultSet);
+        }
     }
 
     @Override
     public List<Seller> findByDepartment(Integer departmentId) {
-
         PreparedStatement statement = null;
         ResultSet resultSet = null;
 
@@ -123,7 +169,8 @@ public class SellerDaoJDBC implements SellerDao {
             throw new DbException(e.getMessage());
         } finally {
             DB.closeStatement(statement);
-            DB.closeConnection();
+            DB.closeResultSet(resultSet);
         }
+
     }
 }
