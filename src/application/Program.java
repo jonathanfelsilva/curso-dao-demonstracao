@@ -26,5 +26,11 @@ public class Program {
         System.out.println("\n=== Teste 3: ===");
         allSellers.forEach(System.out::println);
 
+        System.out.println("\n=== Teste 4: ===");
+        Seller newSeller = new Seller(null, "Jonathan Teste", "jonathan@jonathan", new Date(), 1000.00, new Department(2, "Teste"));
+        sellerDao.insert(newSeller);
+        System.out.println("Deu certo! Novo ID: " + newSeller.getId());
+
+
     }
 }
