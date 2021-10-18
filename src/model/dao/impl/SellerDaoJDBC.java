@@ -6,6 +6,7 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
+import javax.xml.transform.Result;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -51,28 +52,35 @@ public class SellerDaoJDBC implements SellerDao {
             resultSet = statement.executeQuery();
 
             if (resultSet.next()){
-                Department dep = new Department();
-
-                dep.setId(resultSet.getInt("DepartmentId"));
-                dep.setName(resultSet.getString("DepName"));
-
-                Seller seller = new Seller();
-
-                seller.setId(resultSet.getInt("Id"));
-                seller.setName(resultSet.getString("Name"));
-                seller.setEmail(resultSet.getString("Email"));
-                seller.setBirthDate(resultSet.getDate("BirthDate"));
-                seller.setBaseSalary(resultSet.getDouble("BaseSalary"));
-                seller.setDepartment(dep);
-
+                Department dep = instantiateDepartment(resultSet);
+                Seller seller = instantiateSeller(resultSet, dep);
                 return seller;
-
             } else {
                 return null;
             }
         } catch (SQLException e) {
            throw new DbException(e.getMessage());
         }
+    }
+
+    private Seller instantiateSeller(ResultSet resultSet, Department dep) throws SQLException {
+        Seller seller = new Seller();
+
+        seller.setId(resultSet.getInt("Id"));
+        seller.setName(resultSet.getString("Name"));
+        seller.setEmail(resultSet.getString("Email"));
+        seller.setBirthDate(resultSet.getDate("BirthDate"));
+        seller.setBaseSalary(resultSet.getDouble("BaseSalary"));
+        seller.setDepartment(dep);
+
+        return seller;
+    }
+
+    private Department instantiateDepartment(ResultSet rs) throws SQLException {
+        Department dep = new Department();
+        dep.setId(rs.getInt("DepartmentId"));
+        dep.setName(rs.getString("DepName"));
+        return dep;
     }
 
     @Override
