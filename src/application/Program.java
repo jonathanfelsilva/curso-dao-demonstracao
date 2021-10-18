@@ -5,8 +5,10 @@ import model.dao.SellerDao;
 import model.entities.Department;
 import model.entities.Seller;
 
+import java.sql.SQLOutput;
 import java.util.Date;
 import java.util.List;
+import java.util.Scanner;
 
 public class Program {
 
@@ -14,6 +16,8 @@ public class Program {
 
         SellerDao sellerDao = DaoFactory.createSellerDao();
         Seller seller = sellerDao.findById(6);
+
+        Scanner sc = new Scanner(System.in);
 
         System.out.println("=== Teste 1: ===");
         System.out.println(seller);
@@ -32,10 +36,18 @@ public class Program {
         System.out.println("Deu certo! Novo ID: " + newSeller.getId());
 
         System.out.println("\n=== Teste 5 ===");
-        Seller newSellerForUpdate = sellerDao.findById(3);
+        Seller newSellerForUpdate = sellerDao.findById(5);
         newSellerForUpdate.setName("Teste nome");
         sellerDao.update(newSellerForUpdate);
-        System.out.println("Deu certo?");
+        System.out.println("Update completed.");
+
+        System.out.println("\n=== Teste 6 ===");
+        System.out.print("Enter ID to delete: ");
+        int idToDelete = sc.nextInt();
+        sc.nextLine();
+
+        sellerDao.deleteById(idToDelete);
+        System.out.println("Delete completed.");
 
     }
 }
